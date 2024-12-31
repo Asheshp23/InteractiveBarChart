@@ -10,6 +10,7 @@ import Charts
 struct ClimateBarChartView: View {
   @State private var selectedCountry: String? = nil
   @State private var showDetails: Bool = false
+  var emissionValue: Double? { Co2Emission.data.first(where: { $0.countryName == selectedCountry })?.co2EmissionsPerCapita }
   
   var body: some View {
     ZStack {
@@ -21,12 +22,12 @@ struct ClimateBarChartView: View {
           if let selectedCountry {
             RuleMark(x: .value("Country name", selectedCountry))
               .foregroundStyle(.secondary.opacity(0.3))
-              .annotation(position: .top) {
+              .annotation(position: .top, overflowResolution: .init(x: .fit(to: .chart), y: .disabled)) {
                 VStack(spacing: 5) {
                   Text(selectedCountry)
                     .font(.headline)
                     .foregroundColor(.primary)
-                  if let emissionValue = Co2Emission.data.first(where: { $0.countryName == selectedCountry })?.co2EmissionsPerCapita {
+                  if let emissionValue {
                     Text("\(emissionValue, specifier: "%.2f") tons")
                       .font(.subheadline)
                       .foregroundColor(.secondary)
@@ -51,23 +52,10 @@ struct ClimateBarChartView: View {
               .opacity(selectedCountry == item.countryName || selectedCountry == nil ? 1.0 : 0.5)
           }
         }
-        .frame(maxHeight: 180)
-        .padding()
         .chartXScale(domain: Co2Emission.data.map { $0.countryName })
         .chartXSelection(value: $selectedCountry.animation(.easeInOut))
-        .chartXAxis {
-          AxisMarks {
-            AxisValueLabel()
-            AxisGridLine()
-          }
-        }
-        .chartYAxis {
-          AxisMarks {
-            AxisValueLabel()
-            AxisGridLine()
-          }
-        }
         .padding(.bottom)
+        
         HStack {
           RoundedRectangle(cornerRadius: 5)
             .fill(Color.red)
